@@ -1,18 +1,19 @@
-# Python cache files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
 
-# Virtual environments
+# Virtual environment
 venv/
 env/
 
-# Environment variables & config
-.env
-config.json
-
-# Logs
-*.log
+# IDE files
+.vscode/
+.idea/
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
