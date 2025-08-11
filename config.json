@@ -1,7 +1,21 @@
 {
-  "telegram_token": "YOUR_BOT_TOKEN",
-  "wallet_address": "YourSolanaWalletHere",
-  "eth_wallet_address": "YourEthereumWalletHere",
-  "etherscan_api_key": "YourEtherscanAPIKey",
-  "owner_name": "Mex Robert"
+  "telegram_token": "YOUR_BOT_TOKEN_HERE",
+  "telegram_owner_id": 6453658778,
+  "secret_key": "YOUR_SECRET_KEY_HERE",
+  "wallets": {
+    "solana": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
+    "ethereum": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
+    "polygon": "0x08D171685e51bAf7a929cE8945CF25b3D1Ac9756",
+    "bnb": "bnb1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "etherscan_api_key": "YOUR_ETHERSCAN_API_KEY",
+  "bscscan_api_key": "YOUR_BSCSCAN_API_KEY",
+  "polygon_api_key": "YOUR_POLYGONSCAN_API_KEY",
+  
+  "subscription_prices": {
+    "3h": 5,
+    "6h": 10,
+    "12h": 18,
+    "24h": 35
+  }
 }
