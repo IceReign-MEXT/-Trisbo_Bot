@@ -1,26 +1,18 @@
 {
-  "telegram_token": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
-  "telegram_chat_id": "YOUR_TELEGRAM_CHAT_ID",
-  "wallet_addresses": {
-    "solana": [
-      "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
-      "3JqvK1ZAt67nipBVgZj6zWvuT8icMWBMWyu5AwYnhVss"
-    ],
-    "ethereum": [
-      "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
-      "0x08D171685e51bAf7a929cE8945CF25b3D1Ac9756",
-      "0x6109366708d8Aaf7b8923c10e4FeAa8E32b20D3c"
-    ],
-    "bnb": [
-      "0x6109366708d8Aaf7b8923c10e4FeAa8E32b20D3c"
-    ],
-    "polygon": [
-      "0x08D171685e51bAf7a929cE8945CF25b3D1Ac9756"
-    ]
+  "telegram_token": "YOUR_BOT_TOKEN_HERE",
+  "telegram_chat_id": "6453658778",
+  "wallets": {
+    "solana": "3JqvK1ZAt67nipBVgZj6zWvuT8icMWBMWyu5AwYnhVss",
+    "ethereum": "0x08D171685e51bAf7a929cE8945CF25b3D1Ac9756",
+    "bnb": "0x6109366708d8Aaf7b8923c10e4FeAa8E32b20D3c"
   },
-  "etherscan_api_key": "YOUR_ETHERSCAN_API_KEY",
-  "bscscan_api_key": "YOUR_BSCSCAN_API_KEY",
-  "polygonscan_api_key": "YOUR_POLYGONSCAN_API_KEY",
+  "etherscan_api_key": "VZFDUWB3YGQ1YCDKTCU1D6DDSS",
   "owner_name": "Mex Robert",
-  "telegram_username": "@RobertSmithETH"
+  "language": "en",
+  "subscription_prices": {
+    "3_hours": 5,
+    "6_hours": 9,
+    "12_hours": 16,
+    "24_hours": 30
+  }
 }
