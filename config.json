@@ -1,14 +1,8 @@
 {
-  "telegram_token": "YOUR_BOT_TOKEN_HERE",
-  "telegram_chat_id": "YOUR_TELEGRAM_CHAT_ID",
-  "wallet_address_solana": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
-  "wallet_address_eth": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
-  "etherscan_api_key": "YOUR_ETHERSCAN_API_KEY",
-  "prices": {
-    "3h": 5,
-    "6h": 9,
-    "12h": 15,
-    "24h": 25
-  },
+  "telegram_token": "YOUR_BOT_TOKEN",
+  "telegram_chat_id": "YOUR_CHAT_ID",
+  "wallet_address": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
+  "eth_wallet_address": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
+  "etherscan_api_key": "VZFDUWB3YGQ1YCDKTCU1D6DDSS",
   "owner_name": "Mex Robert"
 }
