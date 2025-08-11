@@ -1,21 +1,23 @@
 {
-  "telegram_token": "YOUR_BOT_TOKEN_HERE",
-  "telegram_owner_id": 6453658778,
-  "secret_key": "YOUR_SECRET_KEY_HERE",
+  "telegram_token": "YOUR_TELEGRAM_BOT_TOKEN",
+  "telegram_chat_id": "YOUR_TELEGRAM_CHAT_ID",
   "wallets": {
-    "solana": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
-    "ethereum": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
-    "polygon": "0x08D171685e51bAf7a929cE8945CF25b3D1Ac9756",
-    "bnb": "bnb1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "solana": "3JqvK1ZAt67nipBVgZj6zWvuT8icMWBMWyu5AwYnhVss",
+    "ethereum": "0x08D171685e51bAf7a929cE8945CF25b3D1Ac9756",
+    "bnb": "0x6109366708d8Aaf7b8923c10e4FeAa8E32b20D3c",
+    "polygon": "YOUR_POLYGON_WALLET",
+    "bsv": "YOUR_BSV_WALLET"
   },
-  "etherscan_api_key": "YOUR_ETHERSCAN_API_KEY",
-  "bscscan_api_key": "YOUR_BSCSCAN_API_KEY",
-  "polygon_api_key": "YOUR_POLYGONSCAN_API_KEY",
-  
+  "api_keys": {
+    "etherscan": "YOUR_ETHERSCAN_API_KEY",
+    "bscscan": "YOUR_BSCSCAN_API_KEY",
+    "polygonscan": "YOUR_POLYGONSCAN_API_KEY"
+  },
+  "owner_name": "Mex Robert",
   "subscription_prices": {
-    "3h": 5,
-    "6h": 10,
-    "12h": 18,
-    "24h": 35
+    "3_hours": 2.5,
+    "6_hours": 5,
+    "12_hours": 10,
+    "24_hours": 20
   }
 }
