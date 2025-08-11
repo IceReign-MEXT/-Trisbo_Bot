@@ -1,92 +1,42 @@
 import json
 import logging
 import requests
-from datetime import datetime, timedelta
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # Load config
-with open("config.json") as f:
+with open("config.json", "r") as f:
     config = json.load(f)
 
 BOT_TOKEN = config["telegram_token"]
 CHAT_ID = config["telegram_chat_id"]
-SOL_WALLET = config["wallet_address_solana"]
-ETH_WALLET = config["wallet_address_eth"]
+SOL_WALLET = config["wallet_address"]
+ETH_WALLET = config["eth_wallet_address"]
 ETHERSCAN_API_KEY = config["etherscan_api_key"]
-PRICES = config["prices"]
-OWNER_NAME = config["owner_name"]
 
-logging.basicConfig(level=logging.INFO)
-scheduler = AsyncIOScheduler()
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
 
-# In-memory subscription store
-subscriptions = {}
+CHAINS = [1, 42161, 56, 137, 10]  # Ethereum mainnet + Arbitrum + BSC + Polygon + Optimism chain IDs
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        f"Hello {OWNER_NAME} 👋\n"
+        f"Hello {config['owner_name']} 👋\n"
         f"Tracking wallets:\n"
         f"🔹 SOL: {SOL_WALLET}\n"
-        f"🔹 ETH: {ETH_WALLET}\n\n"
-        "Use /subscribe <3h|6h|12h|24h> to activate a plan.\n"
-        "Use /check to check balances.\n"
-        "Use /status to check subscription status.\n"
-        "Use /help for commands."
+        f"🔹 ETH: {ETH_WALLET}"
     )
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    help_text = (
-        "/start - Welcome message\n"
-        "/check - Check wallet balances\n"
-        "/subscribe <plan> - Subscribe to a plan (3h, 6h, 12h, 24h)\n"
-        "/status - Check subscription status\n"
-    )
-    await update.message.reply_text(help_text)
-
-async def check(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    sol_balance = get_solana_balance(SOL_WALLET)
-    eth_balance = get_eth_balance(ETH_WALLET)
-    await update.message.reply_text(
-        f"💰 Balances:\n🔹 SOL: {sol_balance} SOL\n🔹 ETH: {eth_balance} ETH"
-    )
-
-async def subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) != 1 or context.args[0] not in PRICES:
-        await update.message.reply_text("Usage: /subscribe <3h|6h|12h|24h>")
-        return
-
-    plan = context.args[0]
-    price = PRICES[plan]
-    user_id = update.effective_user.id
-
-    # TODO: Replace with payment verification integration
-    expire_time = datetime.utcnow() + timedelta(hours=int(plan[:-1]))
-    subscriptions[user_id] = expire_time
-
-    await update.message.reply_text(
-        f"Subscription to {plan} plan activated for ${price}. Expires at {expire_time} UTC."
-    )
-
-async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    expire = subscriptions.get(user_id)
-
-    if expire and expire > datetime.utcnow():
-        remaining = expire - datetime.utcnow()
-        await update.message.reply_text(f"Subscription active. Time left: {remaining}.")
-    else:
-        await update.message.reply_text("No active subscription found. Use /subscribe.")
-
-def get_solana_balance(address):
+def get_sol_balance(address):
     try:
         url = "https://api.mainnet-beta.solana.com"
         payload = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "getBalance",
-            "params": [address]
+            "jsonrpc":"2.0",
+            "id":1,
+            "method":"getBalance",
+            "params":[address]
         }
         headers = {"Content-Type": "application/json"}
         r = requests.post(url, json=payload, headers=headers)
@@ -95,30 +45,38 @@ def get_solana_balance(address):
     except Exception as e:
         return f"Error: {e}"
 
-def get_eth_balance(address):
-    try:
-        url = f"https://api.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey={ETHERSCAN_API_KEY}"
-        r = requests.get(url)
-        wei = int(r.json()["result"])
-        return wei / 1e18
-    except Exception as e:
-        return f"Error: {e}"
+def get_eth_balances(address):
+    balances = {}
+    for chain_id in CHAINS:
+        try:
+            url = (
+                f"https://api.etherscan.io/v2/api?"
+                f"chainid={chain_id}&module=account&action=balance"
+                f"&address={address}&tag=latest&apikey={ETHERSCAN_API_KEY}"
+            )
+            r = requests.get(url)
+            data = r.json()
+            if data.get("status") == "1":
+                wei = int(data["result"])
+                balances[chain_id] = wei / 1e18
+            else:
+                balances[chain_id] = f"Error: {data.get('message')}"
+        except Exception as e:
+            balances[chain_id] = f"Exception: {e}"
+    return balances
 
-async def sweep_funds_job():
-    # TODO: Implement smart contract sweep logic here
-    logging.info("Sweep funds job triggered.")
+async def check(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    sol_balance = get_sol_balance(SOL_WALLET)
+    eth_balances = get_eth_balances(ETH_WALLET)
+
+    message = f"💰 Balances:\n🔹 SOL: {sol_balance} SOL\n"
+    for chain_id, balance in eth_balances.items():
+        message += f"🔹 Chain {chain_id}: {balance} ETH\n"
+
+    await update.message.reply_text(message)
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("check", check))
-    app.add_handler(CommandHandler("subscribe", subscribe))
-    app.add_handler(CommandHandler("status", status))
-
-    scheduler.add_job(sweep_funds_job, "interval", hours=1)
-    scheduler.start()
-
-    print("Bot started...")
     app.run_polling()
