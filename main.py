@@ -1,9 +1,9 @@
 import json
 import logging
-import os
+import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import requests
+from web3 import Web3
 
 # Load config
 with open("config.json", "r") as f:
@@ -19,13 +19,45 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+# Helper: Get ETH balance
+def get_eth_balance(address):
+    try:
+        api_key = "https://api.etherscan.io/api"
+        r = requests.get(
+            f"{api_key}?module=account&action=balance&address={address}&tag=latest&apikey=YourEtherscanAPIKey"
+        )
+        wei = int(r.json()["result"])
+        return wei / 1e18
+    except Exception as e:
+        return f"Error: {e}"
+
+# Helper: Get SOL balance
+def get_solana_balance(address):
+    try:
+        url = "https://api.mainnet-beta.solana.com"
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getBalance",
+            "params": [address]
+        }
+        headers = {"Content-Type": "application/json"}
+        r = requests.post(url, json=payload, headers=headers)
+        lamports = r.json()["result"]["value"]
+        return lamports / 1_000_000_000
+    except Exception as e:
+        return f"Error: {e}"
+
 # Command: /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        f"Hello {config['owner_name']} 👋\n"
+        f"Welcome {config['owner_name']} 👋\n"
         f"Tracking wallets:\n"
         f"🔹 SOL: {SOL_WALLET}\n"
-        f"🔹 ETH: {ETH_WALLET}"
+        f"🔹 ETH: {ETH_WALLET}\n\n"
+        "Use /check to see wallet balances.\n"
+        "Use /subscribe for subscription info.\n"
+        "Use /roadmap to see the project roadmap."
     )
 
 # Command: /check
@@ -38,37 +70,42 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🔹 ETH: {eth_balance} ETH"
     )
 
-# Get Solana balance
-def get_solana_balance(address):
-    try:
-        url = f"https://api.mainnet-beta.solana.com"
-        payload = {
-            "jsonrpc":"2.0",
-            "id":1,
-            "method":"getBalance",
-            "params":[address]
-        }
-        headers = {"Content-Type": "application/json"}
-        r = requests.post(url, json=payload, headers=headers)
-        lamports = r.json()["result"]["value"]
-        return lamports / 1_000_000_000
-    except Exception as e:
-        return f"Error: {e}"
+# Command: /subscribe
+async def subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    price = config["subscription_price_usd"]
+    await update.message.reply_text(
+        f"Subscription price is ${price}.\n"
+        "Send funds to the wallets to subscribe.\n"
+        "Once paid, you will get access."
+    )
 
-# Get Ethereum balance
-def get_eth_balance(address):
-    try:
-        api_key = "https://api.etherscan.io/api"
-        r = requests.get(
-            f"{api_key}?module=account&action=balance&address={address}&tag=latest&apikey=YourEtherscanAPI"
-        )
-        wei = int(r.json()["result"])
-        return wei / 1e18
-    except Exception as e:
-        return f"Error: {e}"
+# Command: /roadmap
+async def roadmap(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    roadmap_text = (
+        "🚀 **Project Roadmap** 🚀\n"
+        "1. Launch Auto-Sweep Bot\n"
+        "2. Add Payment & Subscription System\n"
+        "3. Deploy on Cloud Hosting (Railway/Glitch)\n"
+        "4. Integrate Price & News Updates\n"
+        "5. Add Whitepaper & Project Info\n"
+    )
+    await update.message.reply_text(roadmap_text)
+
+# Command: /help
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "/start - Welcome message\n"
+        "/check - Wallet balances\n"
+        "/subscribe - Payment info\n"
+        "/roadmap - Project roadmap\n"
+        "/help - List commands"
+    )
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("check", check))
+    app.add_handler(CommandHandler("subscribe", subscribe))
+    app.add_handler(CommandHandler("roadmap", roadmap))
+    app.add_handler(CommandHandler("help", help_command))
     app.run_polling()
