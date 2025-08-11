@@ -1,8 +1,7 @@
 {
   "telegram_token": "YOUR_BOT_TOKEN",
-  "telegram_chat_id": "YOUR_CHAT_ID",
-  "wallet_address": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
-  "eth_wallet_address": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
-  "etherscan_api_key": "VZFDUWB3YGQ1YCDKTCU1D6DDSS",
+  "wallet_address": "YourSolanaWalletHere",
+  "eth_wallet_address": "YourEthereumWalletHere",
+  "etherscan_api_key": "YourEtherscanAPIKey",
   "owner_name": "Mex Robert"
 }
