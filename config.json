@@ -1,11 +1,9 @@
 {
-    "BOT_TOKEN": "PASTE-YOUR-TELEGRAM-BOT-TOKEN-HERE",
-    "OWNER_ID": "PASTE-YOUR-TELEGRAM-ID-HERE",
-    "WALLET_ADDRESSES": {
-        "SOLANA": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
-        "ETHEREUM": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
-        "BITCOIN": "bc1qe8pf5nzj553kcyv0nl4p5cl6edrsl8ullffkmk"
-    },
-    "COMMAND_PREFIX": "/",
-    "DEBUG_MODE": true
+  "telegram_token": "YOUR_BOT_TOKEN",
+  "telegram_chat_id": "6453658778",
+  "wallet_address": "4tUTqBSzqz8eXbZPVdP2e5tiNRbFK3j5GFTqLEKubUzy",
+  "eth_wallet_address": "0x1650dcf7c462cb101c6b399b2deeceb72d09af6f",
+  "language": "en",
+  "owner_name": "Mex Robert",
+  "telegram_username": "@RobertSmithETH"
 }
