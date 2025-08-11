@@ -1,10 +1,16 @@
 {
-  "telegram_token": "YOUR_BOT_TOKEN",
-  "telegram_chat_id": "YOUR_TELEGRAM_CHAT_ID",
-  "wallet_address": "7ibxHLwe5kA62r9NiL8bz1yRGXA4chhjuCBuzCaVjs3T",
+  "telegram_token": "7802160685:AAHOniNYme2nwCKoIgK4cuXCjTbVRtUEEkA",
+  "telegram_chat_id": "6453658778",
+  "wallet_address": "0xd13033d3fe0D92A35e8983BbF15511a8B1BE11ac",
   "eth_wallet_address": "0xd13033d3fe0D92A35e8983BbF15511a8B1BE11ac",
-  "btc_wallet_address": "bc1qw489x824taz6hjuu2ethe3g4g38qc29c5p4aw7",
-  "subscription_price_usd": 25,
+  "etherscan_api_key": "T6H7KF46NT1GFP9BDRVNQ3D5GI7JPXZ671",
+  "language": "en",
   "owner_name": "Mex Robert",
-  "telegram_username": "@RobertSmithETH"
+  "telegram_username": "@RobertSmithETH",
+  "subscription_prices": {
+    "3h": 5,
+    "6h": 10,
+    "12h": 20,
+    "24h": 50
+  }
 }
