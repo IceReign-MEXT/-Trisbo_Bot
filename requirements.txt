@@ -1,3 +1,4 @@
 python-telegram-bot==20.7
-requests
-apscheduler
+httpx==0.25.2
+apscheduler==3.11.1
+pandas==2.0.3
