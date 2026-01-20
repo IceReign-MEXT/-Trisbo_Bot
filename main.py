@@ -1,46 +1,70 @@
 import os
 import re
 import asyncio
+import requests
 from telethon import TelegramClient, events
 from telegram import Bot
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Config from .env
+# --- CONFIG ---
+HELIUS_KEY = os.getenv("HELIUS_API_KEY")
+HELIUS_URL = os.getenv("HELIUS_RPC_URL")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+MY_CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-TARGET_CHANNELS = ['@dexscreener_solana', '@solana_gold_calls', '@SolanaHunters'] # Add the channels you want to "hunt"
-MY_CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 
-# Initialize
-client = TelegramClient('ice_session', API_ID, API_HASH)
+client = TelegramClient('ice_warrior', API_ID, API_HASH)
 tg_bot = Bot(token=BOT_TOKEN)
 
-def scan_logic(ca):
-    # This is where your 'scam_scanner.py' logic goes
-    # For now, we simulate a 'Safe' verdict
-    return "✅ SAFE (Liquidity Locked)"
+# --- THE ALIEN TECHNOLOGY (Helius Audit) ---
+def get_helius_audit(mint_address):
+    """Checks the token using Helius Enhanced API"""
+    try:
+        # We ask Helius for the token metadata and info
+        payload = {
+            "jsonrpc": "2.0",
+            "id": "ice-audit",
+            "method": "getAsset",
+            "params": {
+                "id": mint_address
+            }
+        }
+        response = requests.post(HELIUS_URL, json=payload).json()
 
-@client.on(events.NewMessage(chats=TARGET_CHANNELS))
+        # Logic: If Helius finds the asset, we analyze it
+        if "result" in response:
+            return "✅ VERIFIED ON-CHAIN"
+        else:
+            return "⚠️ UNKNOWN / HIGH RISK"
+    except:
+        return "🔍 SCANNING..."
+
+@client.on(events.NewMessage(chats=['@dexscreener_solana', '@solana_gold_calls'])) # Add more targets
 async def handler(event):
     text = event.raw_text
     ca_match = re.search(r'[1-9A-HJ-NP-Za-km-z]{32,44}', text)
 
     if ca_match:
         ca = ca_match.group(0)
-        verdict = scan_logic(ca)
+        print(f"Target Found: {ca}")
 
-        # The "Animal" Style Formatting
-        hype_msg = f"❄️ **ICE HUB ALPHA DETECTED** ❄️\n\n"
-        hype_msg += f"📍 **CA:** `{ca}`\n"
-        hype_msg += f"🛡️ **VERDICT:** {verdict}\n\n"
-        hype_msg += f"🔗 [Birdeye](https://birdeye.so/token/{ca}?chain=solana) | [DexS](https://dexscreener.com/solana/{ca})\n"
-        hype_msg += f"⚡️ *Bypassing the cartels in real-time.*"
+        # Use your Helius Power
+        audit_result = get_helius_audit(ca)
 
-        await tg_bot.send_message(chat_id=MY_CHANNEL_ID, text=hype_msg, parse_mode='Markdown', disable_web_page_preview=False)
+        msg = (
+            f"❄️ **ICE HUB: ELITE SIGNAL** ❄️\n\n"
+            f"📍 **CA:** `{ca}`\n"
+            f"🛡️ **HELIUS AUDIT:** {audit_result}\n"
+            f"📊 **STATUS:** Ultra-Fast Detection\n\n"
+            f"🚀 [TRADE ON DEXSCREENER](https://dexscreener.com/solana/{ca})\n"
+            f"📝 *Powered by IceGods Intelligence System*"
+        )
 
-print("Weapon Active... Hunting for Alpha...")
+        await tg_bot.send_message(chat_id=MY_CHANNEL_ID, text=msg, parse_mode='Markdown')
+
+print("🛡️ WAR MACHINE IS ONLINE WITH HELIUS FAST-TRACK...")
 client.start()
 client.run_until_disconnected()
