@@ -1,4 +1,5 @@
 .env
 *.session
 get_string.py
+convert_session.py
 __pycache__/
