@@ -5,7 +5,7 @@ import requests
 import sys
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
-from telegram import Bot, Update
+from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from flask import Flask
 from threading import Thread
@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- WEB SERVER FOR UPTIME ROBOT ---
-app = Flask('')
+# --- 1. THE HEARTBEAT (Flask for Render/UptimeRobot) ---
+app = Flask(__name__)
 @app.route('/')
 def home():
     return "WAR MACHINE IS ALIVE"
@@ -22,24 +22,18 @@ def home():
 def run_web():
     app.run(host='0.0.0.0', port=8080)
 
-# --- CONFIG ---
+# --- 2. CONFIGURATION ---
 SESSION_STRING = os.getenv("SESSION_STRING", "").strip()
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-MY_CHANNEL_ID = os.getenv("CHANNEL_ID")
+MY_CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 HELIUS_URL = os.getenv("HELIUS_RPC_URL")
 MY_WALLET = os.getenv("SOLANA_WALLET")
 
-# Initialize
+# --- 3. THE SPY LOGIC (Telethon) ---
 client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
-tg_bot = Bot(token=BOT_TOKEN)
 
-# --- BOT COMMANDS ---
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🛡️ ICE HUB WAR MACHINE ONLINE.\nI am spying on Alpha channels 24/7.")
-
-# --- SPY LOGIC ---
 def get_helius_audit(ca):
     try:
         payload = {"jsonrpc": "2.0", "id": 1, "method": "getAsset", "params": {"id": ca}}
@@ -51,7 +45,7 @@ def get_helius_audit(ca):
 TARGETS = ['dexscreener_solana', 'solana_gold_calls', 'SolanaHunters']
 
 @client.on(events.NewMessage(chats=TARGETS))
-async def handler(event):
+async def spy_handler(event):
     ca_match = re.search(r'[1-9A-HJ-NP-Za-km-z]{32,44}', event.raw_text)
     if ca_match:
         ca = ca_match.group(0)
@@ -64,25 +58,46 @@ async def handler(event):
             f"`{MY_WALLET}`\n\n"
             f"🚀 [TRADE](https://dexscreener.com/solana/{ca})"
         )
-        await tg_bot.send_message(chat_id=int(MY_CHANNEL_ID), text=msg, parse_mode='Markdown')
+        # Use the application's bot instance to send
+        await application.bot.send_message(chat_id=MY_CHANNEL_ID, text=msg, parse_mode='Markdown')
 
-async def main():
-    # Start the "Speaker" (Bot Commands)
-    application = ApplicationBuilder().token(BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start_command))
+# --- 4. THE COMMAND HANDLERS (Python-Telegram-Bot) ---
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🛡️ **ICE HUB WAR MACHINE ONLINE**\nStatus: 24/7 Alpha Spying Active.")
 
-    # Start the "Spy" (Jessica Account)
+async def alpha(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔎 Check the main channel for the latest signals.")
+
+# --- 5. THE UNIFIED ENGINE ---
+application = ApplicationBuilder().token(BOT_TOKEN).build()
+application.add_handler(CommandHandler("start", start))
+application.add_handler(CommandHandler("alpha", alpha))
+
+async def run_bot():
+    # Start Telethon (The Spy)
     await client.start()
-    print("🛡️ WAR MACHINE IS ONLINE!")
+    print("✅ SPY (JESSICA) IS ONLINE")
 
-    # Run both simultaneously
-    await asyncio.gather(
-        client.run_until_disconnected(),
-        application.run_polling()
-    )
+    # Start the Bot Application (The Broadcaster)
+    async with application:
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
+        print("✅ BROADCASTER (BOT) IS ONLINE")
+
+        # Keep both running
+        await asyncio.gather(
+            client.run_until_disconnected(),
+            # Wait forever
+            asyncio.Event().wait()
+        )
 
 if __name__ == '__main__':
-    # Start the Web Server thread for UptimeRobot
-    Thread(target=run_web).start()
-    # Start the Bot
-    asyncio.run(main())
+    # Start Web Server in a separate thread
+    Thread(target=run_web, daemon=True).start()
+
+    # Run the main bot loop
+    try:
+        asyncio.run(run_bot())
+    except KeyboardInterrupt:
+        pass
