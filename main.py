@@ -5,33 +5,41 @@ import requests
 import sys
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
-from telegram import Bot
+from telegram import Bot, Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from flask import Flask
+from threading import Thread
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- DEFENSIVE CONFIG ---
-# .strip() handles accidental spaces from the Render dashboard
+# --- WEB SERVER FOR UPTIME ROBOT ---
+app = Flask('')
+@app.route('/')
+def home():
+    return "WAR MACHINE IS ALIVE"
+
+def run_web():
+    app.run(host='0.0.0.0', port=8080)
+
+# --- CONFIG ---
 SESSION_STRING = os.getenv("SESSION_STRING", "").strip()
-API_ID = os.getenv("API_ID")
+API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MY_CHANNEL_ID = os.getenv("CHANNEL_ID")
 HELIUS_URL = os.getenv("HELIUS_RPC_URL")
 MY_WALLET = os.getenv("SOLANA_WALLET")
 
-if not SESSION_STRING:
-    print("❌ ERROR: SESSION_STRING is empty. Check Render Environment variables.")
-    sys.exit(1)
+# Initialize
+client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
+tg_bot = Bot(token=BOT_TOKEN)
 
-try:
-    # Initialize the "Spy" (Jessica Account) and the "Speaker" (Old Bot)
-    client = TelegramClient(StringSession(SESSION_STRING), int(API_ID), API_HASH)
-    tg_bot = Bot(token=BOT_TOKEN)
-except Exception as e:
-    print(f"❌ FATAL ERROR STARTING CLIENT: {e}")
-    sys.exit(1)
+# --- BOT COMMANDS ---
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🛡️ ICE HUB WAR MACHINE ONLINE.\nI am spying on Alpha channels 24/7.")
 
+# --- SPY LOGIC ---
 def get_helius_audit(ca):
     try:
         payload = {"jsonrpc": "2.0", "id": 1, "method": "getAsset", "params": {"id": ca}}
@@ -40,39 +48,41 @@ def get_helius_audit(ca):
     except:
         return "🔍 SCANNING..."
 
-# Channels Jessica is spying on
-TARGETS = ['dexscreener_solana', 'solana_gold_calls', 'SolanaHunters', 'unibotsolana']
+TARGETS = ['dexscreener_solana', 'solana_gold_calls', 'SolanaHunters']
 
 @client.on(events.NewMessage(chats=TARGETS))
 async def handler(event):
-    text = event.raw_text
-    ca_match = re.search(r'[1-9A-HJ-NP-Za-km-z]{32,44}', text)
+    ca_match = re.search(r'[1-9A-HJ-NP-Za-km-z]{32,44}', event.raw_text)
     if ca_match:
         ca = ca_match.group(0)
-        print(f"🎯 Target Detected: {ca}")
         audit = get_helius_audit(ca)
         msg = (
             f"❄️ **ICE HUB: ELITE ALPHA** ❄️\n\n"
             f"📍 **CA:** `{ca}`\n"
             f"🛡️ **HELIUS:** {audit}\n\n"
-            f"💎 **WANT 1s EARLY ALERTS?**\n"
-            f"Send 0.1 SOL to: `{MY_WALLET}`\n\n"
-            f"🚀 [TRADE](https://dexscreener.com/solana/{ca})\n"
-            f"⚡️ *Bypassing the Cartels.*"
+            f"💎 **EARLY ACCESS?** Send 0.1 SOL to:\n"
+            f"`{MY_WALLET}`\n\n"
+            f"🚀 [TRADE](https://dexscreener.com/solana/{ca})"
         )
-        try:
-            await tg_bot.send_message(chat_id=int(MY_CHANNEL_ID), text=msg, parse_mode='Markdown')
-        except Exception as e:
-            print(f"Broadcast Error: {e}")
+        await tg_bot.send_message(chat_id=int(MY_CHANNEL_ID), text=msg, parse_mode='Markdown')
 
 async def main():
-    print("🛡️ WAR MACHINE ATTEMPTING START...")
-    try:
-        await client.start()
-        print("✅ SUCCESS: WAR MACHINE IS ONLINE AND HUNTING!")
-        await client.run_until_disconnected()
-    except Exception as e:
-        print(f"❌ LOGIN FAILED: {e}")
+    # Start the "Speaker" (Bot Commands)
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("start", start_command))
+
+    # Start the "Spy" (Jessica Account)
+    await client.start()
+    print("🛡️ WAR MACHINE IS ONLINE!")
+
+    # Run both simultaneously
+    await asyncio.gather(
+        client.run_until_disconnected(),
+        application.run_polling()
+    )
 
 if __name__ == '__main__':
+    # Start the Web Server thread for UptimeRobot
+    Thread(target=run_web).start()
+    # Start the Bot
     asyncio.run(main())
