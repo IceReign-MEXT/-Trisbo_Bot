@@ -1,4 +1,4 @@
 .env
-__pycache__/
 *.session
-*.session-journal
+get_string.py
+__pycache__/
